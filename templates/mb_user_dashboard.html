@@ -1,0 +1,207 @@
+{% extends 'mb_user_base.html' %}
+{% load static %}
+{% block title %}
+MANAGE MONTHLY EXPPENSE
+{% endblock %}
+
+{% block content %}
+<!-- <div class="user-view-choice-settings">
+    <form id="device_screen_form" method="post" action="{% url 'account:device_view_choice' %}">
+    {% csrf_token %}
+        <div class="mobile-view-switch">
+            <label class="switch">
+                {% if user_settings.prefered_view == 'mobile' %}
+                    <input type="checkbox" name="screen_size" onchange="document.getElementById('device_screen_form').submit()" checked>
+                {% else %}
+                    <input type="checkbox" name="screen_size" onchange="document.getElementById('device_screen_form').submit()">
+                {% endif %}
+                <span class="slider"></span>
+            </label>
+        </div>
+    </form>
+    <form id="using_hand_form" method="post" action="{% url 'account:using_hand_choice' %}">
+        {% csrf_token %}
+        <div  class="hand-prefered-switch">
+            <label class="switch">
+                {% if user_settings.using_hand == 'right' %}
+                    <input type="checkbox" name="prefered_hand" onchange="document.getElementById('using_hand_form').submit()" checked>
+                {% else %}
+                    <input type="checkbox" name="prefered_hand" onchange="document.getElementById('using_hand_form').submit()">
+                {% endif %}
+                <span class="slider"></span>
+            </label>
+        </div>
+    </form>
+</div> -->
+<div class="wallet-short-info-section">
+    <div class="wallet-month-selection-form">
+        <form>
+            <select id="top-sec-wallet" onchange="get_amount()">
+                <option value="" selected>Total of All Wallets</option>
+                {% for wallet in wallets %}
+                <option value="{{ wallet.id }}">{{ wallet.wallet_name }}</option>
+                {% endfor %}
+            </select>
+            <input  id="top-sec-month" value="" type="month" name="month" onchange="get_amount()">
+        </form>
+    </div>
+    <div class="wallet-month-form-result">
+        <div class="wallet-short-info-dashboard">
+            <p>Wallet Balance</p>
+            <div id="wallet_balance_top_sec">Tk. {{wallet_balance}}</div>
+        </div>
+
+        <div class="wallet-short-info-dashboard">
+            <p>Total Income</p>
+            <div id="total_income_top_sec">Select Month</div>
+        </div>
+
+        <div class="wallet-short-info-dashboard">
+            <p>Total Expense</p>
+            <div id="total_cost_top_sec">Select Month</div>
+        </div>
+    </div>
+</div>
+
+<!-- multiseries bar chart -->
+
+<div class="income-expense-short-info-section px-1 pt-3 pb-4" style="max-width: 100%; overflow-x: scroll;">
+    <div class="call-out-buttons-to-add-data pb-4">
+        <div class="income-add">
+            <a href="{% url 'income:my_income' %}"><button>+ <br> Add Income</button></a>
+        </div>
+    
+        <div class="cost-add">
+            <a href="{% url 'costs:my_costs' %}"><button>+ <br> Add Expense</button></a>
+        </div>
+        
+        <div class="go-to-wallet">
+            <a href="{% url 'account:my_cash_flow_source' %}"><button>Cash-Flow Sources</button></a>
+        </div>
+    
+    </div>
+
+    <div style="width: 100%;">
+        <canvas id="myChart" style="max-height: 320px;" height="140"></canvas>
+        <canvas id="lineChart" width="400" height="140" class="mt-3"></canvas>
+    </div>
+</div>
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+window.onload = function createChart() {
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var line_chart = document.getElementById('lineChart').getContext('2d');
+    url = '{% url "account:get_graph_data" %}'
+    $.ajax({
+          type: "GET",
+          dataType: 'json',
+          url: url,
+          data: "data_dict",
+          success: function(data) {
+          console.log(data);
+
+          try{
+
+            var labels = [];
+            var costData = [];
+            var incomeData = [];
+            var savedData = [];
+            var summaryData = []
+
+            for (var key in data) {
+                console.log(key)
+                if (data.hasOwnProperty(key)) {
+                    labels.push(data[key].month);
+                    costData.push(data[key].cost);
+                    incomeData.push(data[key].income);
+                    savedData.push(data[key].income - data[key].cost);
+                    summaryData.push(data[key].summary);
+                }
+            }
+            console.log(labels)
+            var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                label: 'COST',
+                data: costData,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+                }, {
+                label: 'INCOME',
+                data: incomeData,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+                }, {
+                label: 'SAVED',
+                data: savedData,
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+                }]
+            },
+            
+            options: {
+                scales: {
+                yAxes: [{
+                    ticks: {
+                    beginAtZero: true
+                    }
+                }]
+                }
+            }
+            });
+          }
+          catch{
+            //pass
+          }
+
+          try{
+            var data2 = {
+            labels: labels, // X-axis labels
+            datasets: [
+            {
+                label: 'Monthly Account Balance',
+                data: summaryData, // Your data points
+                borderColor: '#1B434D', // Line color
+                borderWidth: 2 // Line width
+            }
+            ]
+            };
+
+            // Create the line chart
+            var lineChart = new Chart(line_chart, {
+                type: 'line',
+                data: data2,
+                options: {
+                // Customize chart options here
+                }
+            });
+
+          }
+          catch{
+            pass
+          }
+  
+      }
+          
+          });
+
+
+          
+
+ 
+  }
+  
+
+</script>
+{% endblock %}

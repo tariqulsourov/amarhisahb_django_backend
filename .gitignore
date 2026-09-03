@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment and Keys
+.env
+.env.*
+!.env.example
+*.pem
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Logs and databases
+*.log
+
+# Static and media directories
+staticfiles/
+media/
+
+# Runtime and temporary files
+tmp/
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Frontend build & config
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+

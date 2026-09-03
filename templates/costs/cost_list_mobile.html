@@ -1,0 +1,267 @@
+{% extends 'mb_user_base.html' %}
+{% load static %}
+{% block title %}
+    MANAGE COSTS
+{% endblock %}
+
+{% block content %}
+
+
+<div class="list_table_filter_div content-wrapper" id="cost-table-block"  style="display: block;">
+    <!-- Content Header (Page header) -->
+   
+  
+    <!-- Main content -->
+    <div class="wallet-short-info-section">
+        <div class="top-left pl-0"  >
+          <div class="wallet-month-selection-form">
+              <form>
+                  <select id="top-sec-wallet" onchange="get_amount()">
+                      <option value="" selected>Select Wallet</option>
+                      {% for wallet in all_my_wallet %}
+                      <option value="{{ wallet.id }}">{{ wallet.wallet_name }}</option>
+                      {% endfor %}
+                  </select>
+                  <input  id="top-sec-month" value="" type="month" name="month" onchange="get_amount()">
+              </form>
+          </div>
+          <div class="wallet-month-form-result">
+
+              <div class="wallet-short-info-dashboard">
+                  <p>Total Cost</p>
+                  <div id="total_cost_top_sec">Select Month</div>
+              </div>
+          </div>
+        </div>
+        <div class="top-right pl-4 pr-0">
+          <canvas id="CostPie" height="140" style="max-height: 140px;"></canvas>
+        </div>
+        <div class="form-row text-center add-new-btn" >
+            <div class="col-12 mt-3">
+                <button class="btn btn-outline-dark text-dark col-md-8 col-lg-8 search_btn" onclick="show_cost_entry_form()">Add New Cost</button>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="search-block">
+            <div class="col-12">
+                <div class="">
+                    <div class="col-md-12 bg-light-gray d-flex flex-row justify-content-center mt-3">
+                      <div class="col-md-12 p-2 m-1 filter_block justify-content-center">
+                          <h4 class="m-2 mobile_filter_block_heading">
+                              Filter For Cost
+                          </h4>
+                        <form class="col-md-12 search_form" method="get" action="{% url 'costs:search_costs' %}" id="patientFilterForm">
+                          
+                          <div class="row justify-content-center  search-section">
+                            <div class="col-lg-12 col-md-12 pr-lg-12 pl-lg-0 pr-md-0 pl-md-0 col-sm-12 col-12 m-0 p-0 pb-2 " style="display: inline-block;">
+                              <label class="filter_parameter_lable">Source </label>
+                              <input list="cost_type" name="cost_type" value="{{ request_parameter.cost_type }}" class="filter_parameter_input">
+                              <datalist id="cost_type">
+                                {% for cost in all_cost_info %}
+                                <option value="{{ cost.cost_related_id.short_info }}">
+                                {% endfor %}
+                                
+                            </datalist>
+                            </div>
+                            <div class="col-lg-12 col-md-12 pr-lg-12 pl-lg-0 pr-md-0 pl-md-0 col-sm-12 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+                              <label class="filter_parameter_lable">Wallet </label>
+                              <select class="input--style-1 " type="text" placeholder="Wallet" name="wallet">
+                                
+                                <option class="input-option col-sm-12 col-12" value="">Select Wallet</option>
+                                {% for wallet in all_my_wallet %}
+                                  <option class="input-option col-sm-12 col-12" value="{{ wallet.id }}">{{ wallet.wallet_name }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+
+                            <div class="col-lg-12 col-md-12 pr-lg-0 pl-lg-0 pr-md-0 pl-md-0  col-sm-12 col-12  m-0 p-0 pb-2 " style="display: inline-block;">
+                                <label class="filter_parameter_lable">From </label>
+                                <input type="date" class="filter_parameter_input" value="{{ request_parameter.date_from }}" name="date_from">
+                            </div>
+    
+                            <div class="col-lg-12 col-md-12 pr-lg-0 pl-lg-0 pr-md-0 pl-md-0 col-sm-12 col-12  m-0 p-0 pb-2 " style="display: inline-block;">
+                                <label class="filter_parameter_lable">To </label>
+                                <input type="date" class="filter_parameter_input" name="date_to" value="{{ request_parameter.date_to }}" >
+                            </div>
+                          </div>
+                          
+                         
+                          <div class="form-row text-center" >
+                              <div class="col-6 mt-2 search-block-button">
+                                  <button class="btn btn-outline-dark text-dark col-md-12 col-lg-12 search_btn"><img src="{% static 'images/filter.svg' %}"></button>
+                              </div>
+                              
+                          </div>
+                            
+                        </form>
+  
+                      </div>
+                      
+                  </div>
+  
+                    <div class="row-flex">
+  
+                          <div class="row col-md-12 p-0 m-0 d-flex flex-row justify-content-center">
+                            
+                            <h4 class="m-2 mt-4 mobile_filter_block_heading">
+                                Cost Summery
+                            </h4>
+                            
+                              <div class="row col-md-12 p-0 m-0 d-flex flex-row justify-content-center" >
+                                <div class="total_sum_mobile">
+                                    <p class="total-text">Total ({{ current_month }}) <a href="{% url 'costs:download_cost' %}" class="download-report-icon"><img style="fill: rgb(255, 255, 255); width: 20px;" src="{% static 'images/download-solid-white.svg' %}"></a> </p>
+                                    <p class="total-value">Tk. {{ total_cost }}</p>
+                                </div>
+                                {% for cost in pagination_data_list %}
+                                  <div class="income_list_mobile">
+                                      <div class="left-sec-each">
+                                        <div class="sector-and-date">
+                                            <div class="sector">
+                                                <p>{{ cost.cost_related_id.short_info }}</p>
+                                            </div>
+                                            <div class="date">
+                                                <p>{{ cost.cost_date }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                        <div class="detais">
+                                            <p>
+                                                {{ cost.description }}
+                                            </p>
+                                        </div>
+                                        <div class="wallet">
+                                            <p>
+                                                Wallet: {{ cost.wallet.wallet_name }}
+                                            </p>
+                                        </div>
+                                        <div class="entry-date">
+                                            <p>
+                                                Entry: {{ cost.created_at }}
+                                            </p>
+                                        </div>
+                                      </div>
+                                      <div class="right-sec-each">
+                                        <div class="edit-delete-actions edit_dlt_icon_class">
+                                            <a class=" py-0" type="button" href="{% url 'costs:edit_cost' id=cost.id %}"><img src="{% static 'images/edit-solid.svg' %}"></a>
+                                        
+                                            <a id="del_options{{cost.id}}" class=" py-0" type="button" onclick="showDelConfirmButtons('{{ cost.id }}')"><img src="{% static 'images/trash-solid.svg' %}"></a>
+                                            <div id="del{{cost.id}}" style="display: none;">
+                                                <a class="btn btn-primary py-0 px-2" href="{% url 'costs:delete_cost' id=cost.id %}">Yes</a>
+                                                <button class="btn btn-danger py-0 px-2" onclick="cancelDelChange('{{ cost.id }}')">No</button>
+                                            </div>
+                                        </div>
+                                        <div class="amount">
+                                            <p>Tk. {{ cost.amount }}</p>
+                                        </div>
+                                      </div>
+                                  </div>
+                                  {% endfor %}
+                                  <div class="col-lg-12 col-md-12 col-sm-12 col-12 prev_next_month_block">
+                                    <div class="btn btn-outline-light prev_month_block"><a href="{% url 'costs:search_costs' %}?date_from={{ prev_month_first_date }}&date_to={{ prev_month_last_date }}"><img src="{% static 'images/left.svg' %}"> Month</a></div>
+                                    <hr class="hr-between-prev-next-btn">
+                                    <div class="btn btn-outline-light next_month_block"><a href="{% url 'costs:search_costs' %}?date_from={{ next_month_first_date }}&date_to={{ next_month_last_date }}">Month <img src="{% static 'images/right.svg' %}"></a></div>
+                                  </div>
+                                <!-- {% include 'pagination.html' %} -->
+                          
+                          </div>  
+                </div> 
+            </div>  <!-- /.col -->
+        </div>  <!-- /.row -->
+    </section>  <!-- /.content -->
+  </div>  <!-- /.content-wrapper -->
+
+    <!-- Content Header (Page header) -->
+    {% include 'costs/create_cost.html' %}
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+
+  window.onload = function createCostCart(){
+    var costPieCart = document.getElementById('CostPie');
+    url = "{% url 'costs:get_cost_graph_data' %}"
+    $.ajax({
+      type: "GET",
+      dataType: 'json',
+      url: url,
+      data: "data_dict",
+      success: function(data) {
+        console.log(data)
+        try{
+          var labels = [];
+          var costtotal = [];
+        
+
+        for (var key in data){
+          labels.push(key)
+          costtotal.push(data[key].cost_count)
+        }
+        console.log(labels)
+        new Chart(costPieCart, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            
+            data: costtotal,
+            borderWidth: 0,
+            hoverBorderColor: '#EBF9F0',
+            hoverBorderWidth: 1,
+          }],
+          
+        },
+        options:{
+          plugins: {
+            legend: {
+                display: false, // Hide the legend
+            },
+          }
+        }
+        
+      });
+    }
+        catch(E){
+          console.log(E)
+        }
+      
+    }
+    })
+  }
+    
+    
+  </script>
+  <script>
+      const showDelConfirmButtons = (id) => {
+        console.log(id)
+        $('#del_options'+id).hide(); // hide the buttons
+        $("#del"+id).css("display", "block"); // view the buttons
+    
+      }
+
+      const cancelDelChange = (id) => {
+      console.log(id)
+      $('#del'+id).hide(); // hide the buttons
+      $("#del_options"+id).css("display", "inline-block"); // view the checkbox
+    }
+
+    const show_new_details_entry = () =>{
+      $('#select-details-block').hide(); // hide the buttons
+      $('#new-entry-block').css("display", "block"); // hide the buttons
+    }
+
+    const show_cost_entry_form = () =>{
+      $('#cost-table-block').css("display", "none"); // hide the buttons
+      $('#cost-form-block').css("display", "block"); // hide the buttons
+    }
+
+    const show_cost_list = () =>{
+      $('#cost-form-block').css("display", "none"); // hide the buttons
+      $('#cost-table-block').css("display", "block");; // hide the buttons
+      
+    }
+
+  </script>
+
+{% endblock %}

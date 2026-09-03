@@ -1,0 +1,96 @@
+{% extends 'user_base.html' %}
+{% load static %}
+{% block title %}
+    MANAGE MONTHLY EXPPENSE
+{% endblock %}
+
+{% block content %}
+<div class="user-view-choice-settings">
+    <form id="device_screen_form" method="post" action="{% url 'account:device_view_choice' %}">
+    {% csrf_token %}
+        <div class="mobile-view-switch">
+            <label class="switch">
+                {% if user_settings.prefered_view == 'mobile' %}
+                    <input type="checkbox" name="screen_size" onchange="document.getElementById('device_screen_form').submit()" checked>
+                {% else %}
+                    <input type="checkbox" name="screen_size" onchange="document.getElementById('device_screen_form').submit()">
+                {% endif %}
+                <span class="slider"></span>
+            </label>
+        </div>
+    </form>
+    <form id="using_hand_form" method="post" action="{% url 'account:using_hand_choice' %}">
+        {% csrf_token %}
+        <div  class="hand-prefered-switch">
+            <label class="switch">
+                {% if user_settings.using_hand == 'right' %}
+                    <input type="checkbox" name="prefered_hand" onchange="document.getElementById('using_hand_form').submit()" checked>
+                {% else %}
+                    <input type="checkbox" name="prefered_hand" onchange="document.getElementById('using_hand_form').submit()">
+                {% endif %}
+                <span class="slider"></span>
+            </label>
+        </div>
+    </form>
+</div>
+<div class="wallet-short-info-section">
+    <div class="wallet-month-selection-form">
+        <form>
+            <select>
+                <option>Wallet-1</option>
+                <option>Wallet-1</option>
+            </select>
+            <input type="date" name="month">
+        </form>
+    </div>
+    <div class="wallet-month-form-result">
+        <div class="wallet-short-info-dashboard">
+            <p>Wallet Balance</p>
+            <div>Tk. 3578275</div>
+        </div>
+
+        <div class="wallet-short-info-dashboard">
+            <p>Total Income</p>
+            <div>Tk. 3578275</div>
+        </div>
+
+        <div class="wallet-short-info-dashboard">
+            <p>Total Expense</p>
+            <div>Tk. 3578275</div>
+        </div>
+    </div>
+</div>
+<div class="income-expense-short-info-section">
+    
+    <div class="income-short-info">
+        <p>Income</p>
+        <div class="progress" style="height: 15px;">
+            <div class="progress-bar" role="progressbar" style="width: 25%; background-color: rgb(255, 0, 0);" aria-valuenow="0" aria-valuemin="0" aria-valuemax="50"></div>
+        </div>
+        
+    </div>
+
+    <div class="expense-short-info">
+        <p>Expense</p>
+        <div class="progress" style="height: 15px;">
+            <div class="progress-bar" role="progressbar" style="width: 25%; background-color: rgb(27, 114, 71);" aria-valuenow="0" aria-valuemin="0" aria-valuemax="50"></div>
+        </div>
+        
+    </div>
+</div>
+
+<div class="call-out-buttons-to-add-data">
+    <div class="income-add">
+        <a href="{% url 'income:my_income' %}"><button>+ <br> Add Income</button></a>
+    </div>
+
+    <div class="cost-add">
+        <a href="{% url 'costs:my_costs' %}"><button>+ <br> Add Expense</button></a>
+    </div>
+    
+    <div class="go-to-wallet">
+        <a href="{% url 'savings:my_savings' %}"><button>My Wallets</button></a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,284 @@
+{% extends 'mb_user_base.html' %}
+{% load static %}
+{% block title %}
+    MANAGE WALLETS
+{% endblock %}
+
+{% block content %}
+
+<div class="list_table_filter_div content-wrapper" id="saving-table-block"  style="display: block;">
+    <div class="wallet-short-info-section add-wallet-section wallet-page">
+        <section class="col-md-12 bg-light-gray d-flex flex-row justify-content-center mt-3 px-0">
+            <div class="col-md-12 p-2 m-1 filter_block justify-content-center">
+              <!-- <h4 class="filter_block_heading">
+                My Wallets
+              </h4> -->
+              <div class="all_wallet_list">
+                <div  class="single_wallet total_balance">
+                  <p class="total-value">Total {{ total }}Tk.</p>
+                </div>
+                {% for wallet in all_my_wallet %}
+                  <div class="single_wallet">
+                    <img src="{% static 'images/wallets_img/' %}{{ wallet.wallet_info.image }}" alt="{{ wallet.wallet_info.name }}">
+                    <div class="wallet-name-balance-block">
+                    <div class="sector-and-date">
+                      <div class="sector">
+                          <p>{{ wallet.wallet_name }}</p>
+                      </div>
+                      <form class="wallet_edit wallet_name_edit_form_{{ wallet.id }}" style="display: none;" method="POST" action="{% url 'savings:edit_wallet_name' id=wallet.id %}">
+                        {% csrf_token %}
+                        <input class="" type="text" name="wallet_name_edit" placeholder="{{ wallet.wallet_name }}">
+                        <button class="btn btn-outline-dark text-dark">Ok</button>
+                        </form>
+                    <button class=" wallet_name_edit_icon_{{ wallet.id }} py-0 px-2" style="display:inline-block;" type="button" onclick="show_wallet_name_edit_form({{wallet.id}})"><img class="wallet_name_edit" style="width: 17px;" src="{% static 'images/edit-solid.svg' %}"></button>
+
+                  </div>
+                      <div class="wallet_status">
+                        <p>
+                            Balance: {{ wallet.wallet_status }} Tk.
+                        </p>
+                            
+                        <form class="wallet_edit wallet_balance_edit_form_{{ wallet.id }}" style="display: none;" method="POST" action="{% url 'savings:edit_wallet_amount' id=wallet.id %}">
+                        {% csrf_token %}
+                        <input class="" type="text" name="wallet_balance_edit" placeholder="{{ wallet.wallet_status }}">
+                        <button class="btn btn-outline-dark text-dark">Ok</button>
+                        </form>
+                        <button class=" wallet_amount_edit_icon_{{ wallet.id }} py-0 px-2" style="display:inline-block;" type="button" onclick="show_wallet_amount_edit_form({{wallet.id}})"><img class="wallet_amount_edit" style="width: 17px;" src="{% static 'images/edit-solid.svg' %}"></button>
+
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+              
+              <button class="btn btn-outline-light add_new_wallet_btn" onclick="show_add_new_wallet_from()"><img src="{% static 'images/plus.svg' %}"></button>
+
+              <div >
+                <form method="POST" id="new_wallet_form" style="display: none;" >
+                  {% csrf_token %}
+                  <div id="new-entry-block" class="p-3" style="display:block">
+                    <p class="font-weight-bold">+ New Wallet</p>
+                    <div class="input-group">
+                      
+                        <input class="input--style-1" type="text" placeholder="Wallet Name" name="wallet_name" required>
+                    </div>
+                    <div class="input-group">
+                      <div class="select-input">
+                        <select class="input--style-1 col-sm-12 col-12" type="text" placeholder="Select Wallet" name="wallet_info">
+                          {% for wallet in pre_wallet %}
+                            <option class="input-option col-sm-12 col-12" value="{{ wallet.id }}">{{ wallet.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div class="input-group">
+                      <input class="input--style-1" type="text" placeholder="Wallet Number(optional)" name="wallet_number">
+                    </div>
+                    <div class="input-group">
+                      <input class="input--style-1" type="text" placeholder="Current balance into this wallet" name="wallet_status" required>
+                    </div>
+                  </div>
+                  <div class="p-t-20">
+                    <button class="btn btn--radius" type="submit">Submit</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="tranfer-block">
+                
+              </div>
+
+            </div>
+            
+          </section>
+          
+    </div>
+    <section class="wallet-page-lower-body-section content col-md-12 bg-light-gray mt-3">
+        <div class="col-md-12 p-2 m-1 filter_block justify-content-center">
+            <h4 class="m-2 mobile_filter_block_heading">
+                Transfer Balance
+            </h4>
+          <form class="col-md-12  search_form" method="POST" action="{% url 'savings:transfer_balance' %}" id="patientFilterForm">
+            {% csrf_token %}
+            <div class="row justify-content-center  search-section">
+              <div class="col-lg-12 col-lg-12 pl-lg-0 pr-md-0 pl-md-2 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+                <label class="filter_parameter_lable">Transfer From </label>
+                <select class="input--style-1 " type="text" placeholder="Wallet" name="transfer_from">
+                  
+                  <option class="input-option col-sm-12 col-12" value="">Select Wallet</option>
+                  {% for wallet in all_my_wallet %}
+                    <option class="input-option col-sm-12 col-12" value="{{ wallet.id }}">{{ wallet.wallet_name }}</option>
+                  {% endfor %}
+                </select>
+            </div>
+
+            
+              <div class="col-lg-12 col-md-12 pr-lg-0 pl-lg-0 pr-md-0 pl-md-0 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+                <label class="filter_parameter_lable">Transfer To </label>
+                <select class="input--style-1 " type="text" placeholder="Wallet" name="transfer_to">
+                  
+                  <option class="input-option col-sm-12 col-12" value="">Select Wallet</option>
+                  {% for wallet in all_my_wallet %}
+                    <option class="input-option col-sm-12 col-12" value="{{ wallet.id }}">{{ wallet.wallet_name }}</option>
+                  {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-lg-12 col-md-12 pr-lg-0 pr-md-0 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+              <label class="filter_parameter_lable">Amount</label>
+              <input class="input--style-1" type="number" placeholder="Amount to transfer" name="amount">
+          </div>
+            
+              
+            </div>
+            
+           
+            <div class="form-row text-center" >
+                <div class="col-12 mt-2">
+                    <button class="btn btn-outline-dark text-dark col-md-4 col-lg-5 col-sm-4 col-6  search_btn"><img src="{% static 'images/transfer.svg' %}"></button>
+                </div>
+                
+            </div>
+              
+          </form>
+
+        </div>
+
+        <div class="row-flex">
+  
+          <div class="row col-md-12 col-12 p-0 m-0 d-flex flex-row justify-content-center">
+            
+            <h4 class="m-2 mt-4 mobile_filter_block_heading">
+                  Wallet Details
+            </h4>
+            
+              <div class="row col-md-12 p-0 m-0 d-flex flex-row justify-content-center" >
+                <div class="total_sum_mobile">
+                  
+                  <p class="total-value transfer-details">Transfer Info</p>
+                </div>
+                {% for transfer_detail in all_transfer_details %}
+                  <div class="transfer_list_mobile">
+                      <div class="">
+                        <div class="sector-and-date">
+                            <div class="sector">
+                              <table class="balance-transfer-list-table">
+                                <tr>
+                                  <th class="table-col-1">{{ transfer_detail.transfer_from_wallet }}(-{{ transfer_detail.transfered_amount }})</th> <th class="table-col-2"><img src="{% static 'images/arrow-right-solid.svg' %}"></th> <th class="table-col-3">{{ transfer_detail.transfer_to_wallet }}(+{{ transfer_detail.transfered_amount }})</th>
+                                </tr>
+                                <tr>
+                                  <td class="table-col-1">{{ transfer_detail.prev_amount_of_transfered_from }} Tk.</td> <td class="table-col-2">prev</td> <td class="table-col-3">{{ transfer_detail.prev_amount_of_transfered_to }} Tk.</td>
+                                </tr>
+                                <tr>
+                                  <td class="table-col-1">{{ transfer_detail.current_amount_of_transfered_from }} Tk.</td> <td class="table-col-2">now</td> <td class="table-col-3">{{ transfer_detail.current_amount_of_transfered_to }} Tk.</td>
+                                </tr>
+                                
+                              </table>
+                              <p class="text-center mt-1">{{ transfer_detail.tansfered_date }} </p>
+                                
+                            </div>
+                            <!-- <form class="wallet_edit wallet_name_edit_form_{{ wallet.id }}" style="display: none;" method="POST" action="">
+                              {% csrf_token %}
+                              <input class="" type="text" name="wallet_name_edit" placeholder="{{ wallet.wallet_name }}">
+                              <button class="btn btn-outline-dark text-dark">Ok</button>
+                              </form>
+                          <button class="wallet_name_edit_icon_{{ wallet.id }} py-0 px-2" style="display:inline-block;" type="button" onclick="show_wallet_name_edit_form({{wallet.id}})"><img style="width: 17px;" src=""></button>
+   -->
+                        </div>
+                        
+                        <div class="wallet_status">
+                          
+                              
+                          <!-- <form class="wallet_edit wallet_balance_edit_form_{{ wallet.id }}" style="display: none;" method="POST" action="">
+                          {% csrf_token %}
+                          <input class="" type="text" name="wallet_balance_edit" placeholder="{{ wallet.wallet_status }}">
+                          <button class="btn btn-outline-dark text-dark">Ok</button>
+                          </form>
+                          <button class="wallet_amount_edit_icon_{{ wallet.id }} py-0 px-2" style="display:inline-block;" type="button" onclick="show_wallet_amount_edit_form({{wallet.id}})"><img style="width: 17px;" src=""></button>
+   -->
+                        </div>
+                        
+                            
+                      </div>
+                      <!-- <div class="right-sec-each">
+                          <div class="edit-delete-actions edit_dlt_icon_class">
+                            <a id="del_options{{wallet.id}}" class=" py-0" type="button" "></a>
+                            <div id="del{{wallet.id}}" style="display: none;">
+                                <a class="btn btn-primary py-0 px-2" href="">Yes</a>
+                                <button class="btn btn-danger py-0 px-2" onclick="">No</button>
+                            </div>
+                          </div>
+                          
+                          
+                      </div> -->
+                  </div>
+                  {% endfor %}
+                  
+                <!-- {% include 'pagination.html' %} -->
+          
+          </div>  
+  </div> 
+  </div>  <!-- /.col -->
+        
+      </section>
+
+    
+
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+      const showDelConfirmButtons = (id) => {
+        console.log(id)
+        $('#del_options'+id).hide(); // hide the buttons
+        console.log("#del"+id)
+        $("#del"+id).css("display", "block"); // view the buttons
+    
+      }
+
+      const cancelDelChange = (id) => {
+      console.log(id)
+      $('#del'+id).hide(); // hide the buttons
+      $("#del_options"+id).css("display", "inline-block"); // view the checkbox
+    }
+
+    const show_new_details_entry = () =>{
+      $('#select-details-block').hide(); // hide the buttons
+      $('#new-entry-block').css("display", "block"); // hide the buttons
+    }
+
+    const show_saving_entry_form = () =>{
+      $('#saving-table-block').css("display", "none"); // hide the buttons
+      $('#saving-form-block').css("display", "block"); // hide the buttons
+    }
+
+    const show_saving_list = () =>{
+      $('#saving-form-block').css("display", "none"); // hide the buttons
+      $('#saving-table-block').css("display", "block");; // hide the buttons
+      
+    }
+
+    const show_add_new_wallet_from = () => {
+      $('#new_wallet_form').css("display", "block"); // hide the buttons
+      // $('#saving-table-block').css("display", "block");; // hide the buttons
+    }
+
+    const show_wallet_name_edit_form = (id) =>{
+      console.log('ada')
+      $('.wallet_name_p'+id).css("display", 'none');
+      $('.wallet_name_edit_icon_'+id).css("display", 'none')
+      $('.wallet_name_edit_form_'+id).css("display", 'block');
+    }
+    const show_wallet_amount_edit_form = (id) =>{
+      console.log('ada')
+      $('.wallet_balance_p'+id).css("display", 'none');
+      $('.wallet_amount_edit_icon_'+id).css("display", 'none')
+      $('.wallet_balance_edit_form_'+id).css("display", 'block');
+    }
+
+  </script>
+
+{% endblock %}

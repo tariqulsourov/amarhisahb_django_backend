@@ -1,0 +1,181 @@
+{% extends 'mb_user_base.html' %}
+{% load static %}
+{% block title %}
+    MANAGE CASH FLOW SECTOR
+{% endblock %}
+
+{% block content %}
+
+
+<div class="list_table_filter_div content-wrapper" id="cost-table-block"  style="display: block;">
+    <!-- Content Header (Page header) -->
+    <section class="content1">
+        <div class="search-block">
+            <div class="col-12">
+                <div class="">
+                    <div class="col-md-12 bg-light-gray d-flex flex-row justify-content-center mt-3">
+                      <div class="col-md-12 p-2 m-1 filter_block justify-content-center">
+                          <h4 class="m-2 mobile_filter_block_heading">
+                              CASH FLOW SECTOR
+                          </h4>
+                        <form class="col-md-12 search_form" method="get" action="{% url 'costs:search_costs' %}" id="patientFilterForm">
+                          
+                          <div class="row justify-content-center  search-section">
+                            <div class="col-lg-12 col-md-12 pr-lg-12 pl-lg-0 pr-md-0 pl-md-0 col-sm-12 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+                                <label class="filter_parameter_lable cash-flow-type">Cash-Flow Type </label>
+                                <select class="input--style-1 cash-flow-type" type="text" placeholder="Wallet" name="wallet">
+                                    <option class="input-option col-sm-12 col-12" value="income">Income</option>
+                                    <option class="input-option col-sm-12 col-12" value="cost">Cost</option>
+                                </select>
+                            </div>
+                          </div>
+                          
+                         
+                          <div class="form-row text-center" >
+                              <div class="col-6 mt-2 search-block-button">
+                                  <button class="btn btn-outline-dark text-dark col-md-12 col-lg-12 search_btn"><img src="{% static 'images/filter.svg' %}"></button>
+                              </div>
+                              
+                          </div>
+                            
+                        </form>
+  
+                      </div>
+                      
+                  </div>
+  
+                    <div class="row-flex">
+  
+                          <div class="row col-md-12 p-0 m-0 d-flex flex-row justify-content-center">
+                            
+                            <h4 class="m-2 mt-4 mobile_filter_block_heading">
+                                Cost Summery
+                            </h4>
+                            
+                              <div class="row col-md-12 p-0 m-0 d-flex flex-row justify-content-center" >
+                                <div class="all_source_heading">
+                                    <p class="total-text pb-4">All Source </p>
+                                </div>
+                                {% for source in cash_flow_sources_for_cost %}
+                                  <div class="income_list_mobile">
+                                      <div class="left-sec-each">
+                                        <div class="sector-and-date">
+                                            <div class="sector">
+                                                <p id="cost_flow_source_short{{ source.id }}">{{ source.short_info }} <span style="font-weight: 400;">(cash -)</span></p>
+                                                <form id="cost_flow_source_short_edit_form{{ source.id }}" class="cost_source_edit_form_{{ source.id }}" style="display: none;" method="POST" action="{% url 'account:edit_cost_source' id=source.id %}">
+                                                  {% csrf_token %}
+                                                  <input class="" type="text" name="cost_source_edit" placeholder="{{ source.short_info }}">
+                                                  <button class="btn btn-outline-dark text-dark">Ok</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                      </div>
+                                      <div class="right-sec-each">
+                                        <div class="edit-delete-actions edit_dlt_icon_class">
+                                            <a class=" py-0" type="button" onclick="showCostEditForm('{{ source.id }}')"><img src="{% static 'images/edit-solid.svg' %}"></a>
+                                        
+                                            <a id="cost_del_options{{source.id}}" class=" py-0" type="button" onclick="showCostDelConfirmButtons('{{ source.id }}')"><img src="{% static 'images/trash-solid.svg' %}"></a>
+                                            <div id="cost_del{{source.id}}" style="display: none;">
+                                                <a class="btn btn-primary py-0 px-2" href="{% url 'account:delete_cost_source' id=source.id %}">Yes</a>
+                                                <button class="btn btn-danger py-0 px-2" onclick="cancelCostDelChange('{{ source.id }}')">No</button>
+                                            </div>
+                                        </div>
+
+                                      </div>
+                                  </div>
+                                  {% endfor %}
+                                  {% for source in cash_flow_sources_for_income %}
+                                  <div class="income_list_mobile">
+                                      <div class="left-sec-each">
+                                        <div class="sector-and-date">
+                                            <div class="sector">
+                                                <p id="income_flow_source_short{{ source.id }}">{{ source.short_info }} <span style="font-weight: 400;">(cash +)</span></p>
+                                                <form id="income_flow_source_short_edit_form{{ source.id }}" class="income_source_edit_form_{{ source.id }}" style="display: none;" method="POST" action="{% url 'account:edit_income_source' id=source.id %}">
+                                                  {% csrf_token %}
+                                                  <input class="" type="text" name="income_source_edit" placeholder="{{ source.short_info }}">
+                                                  <button class="btn btn-outline-dark text-dark">Ok</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                      </div>
+                                      <div class="right-sec-each">
+                                        <div class="edit-delete-actions edit_dlt_icon_class">
+                                            <a id="edit-cash-flow-source" class="py-0" type="button" onclick="showIncomeEditForm('{{ source.id }}')"><img src="{% static 'images/edit-solid.svg' %}"></a>
+                                        
+                                            <a id="income_del_options{{source.id}}" class=" py-0" type="button" onclick="showIncomeDelConfirmButtons('{{ source.id }}')"><img src="{% static 'images/trash-solid.svg' %}"></a>
+                                            <div id="income_del{{source.id}}" style="display: none;">
+                                                <a class="btn btn-primary py-0 px-2" href="{% url 'account:delete_income_source' id=source.id %}">Yes</a>
+                                                <button class="btn btn-danger py-0 px-2" onclick="cancelIncomeDelChange('{{ source.id }}')">No</button>
+                                            </div>
+                                        </div>
+
+                                      </div>
+                                  </div>
+                                  {% endfor %}
+                                <!-- {% include 'pagination.html' %} -->
+                          
+                          </div>  
+                </div> 
+            </div>  <!-- /.col -->
+        </div>  <!-- /.row -->
+    </section>  <!-- /.content -->
+  </div>  <!-- /.content-wrapper -->
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+      const showDelConfirmButtons = (id) => {
+        console.log(id)
+        $('#del_options'+id).hide(); // hide the buttons
+        $("#del"+id).css("display", "block"); // view the buttons
+    
+      }
+
+      const showCostDelConfirmButtons = (id) => {
+        console.log(id)
+        $('#cost_del_options'+id).hide(); // hide the buttons
+        $("#cost_del"+id).css("display", "block"); // view the buttons
+    
+      }
+
+      const showIncomeDelConfirmButtons = (id) => {
+        console.log(id)
+        $('#income_del_options'+id).hide(); // hide the buttons
+        $("#income_del"+id).css("display", "block"); // view the buttons
+    
+      }
+
+      const cancelCostDelChange = (id) => {
+      console.log(id)
+      $('#cost_del'+id).hide(); // hide the buttons
+      $("#cost_del_options"+id).css("display", "inline-block"); // view the checkbox
+    }
+      const cancelIncomeDelChange = (id) => {
+      console.log(id)
+      $('#income_del'+id).hide(); // hide the buttons
+      $("#income_del_options"+id).css("display", "inline-block"); // view the checkbox
+    }
+
+    const show_new_details_entry = () =>{
+      $('#select-details-block').hide(); // hide the buttons
+      $('#new-entry-block').css("display", "block"); // hide the buttons
+    }
+
+    const showCostEditForm = (id) =>{
+      console.log('testese')
+      $('#cost_flow_source_short'+id).css("display", "none"); // hide the buttons
+      $('#cost_flow_source_short_edit_form'+id).css("display", "block"); // hide the buttons
+    }
+    const showIncomeEditForm = (id) =>{
+      $('#income_flow_source_short'+id).css("display", "none"); // hide the buttons
+      $('#income_flow_source_short_edit_form'+id).css("display", "block"); // hide the buttons
+    }
+
+    const show_cost_list = () =>{
+      $('#cost-form-block').css("display", "none"); // hide the buttons
+      $('#cost-table-block').css("display", "block");; // hide the buttons
+      
+    }
+
+  </script>
+
+{% endblock %}

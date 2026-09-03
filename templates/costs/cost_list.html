@@ -1,0 +1,178 @@
+{% extends 'user_base.html' %}
+{% load static %}
+{% block title %}
+    MANAGE COSTS
+{% endblock %}
+
+{% block content %}
+
+
+<div class="list_table_filter_div content-wrapper" id="cost-table-block"  style="display: block;">
+    <!-- Content Header (Page header) -->
+   
+  
+    <!-- Main content -->
+    <section class="content">
+        <div class="">
+            <div class="col-12">
+                <div class="">
+                    <div class="col-md-12 bg-light-gray d-flex flex-row justify-content-center mt-3">
+                      <div class="col-md-12 p-2 m-1 filter_block shadow justify-content-center">
+                          <h4 class="m-2 filter_block_heading">
+                              Search Cost
+                          </h4>
+                        <form class="col-md-12 search_form" method="get" action="{% url 'costs:search_costs' %}" id="patientFilterForm">
+                          
+                          <div class="row justify-content-center search-section">
+                            <div class="col-lg-3 col-md-3  pr-lg-2 pl-lg-0 pr-md-2 pl-md-0  col-sm-12 col-12 m-0 p-0 pb-2 " style="display: inline-block;">
+                              <label class="filter_parameter_lable">Sector </label>
+                              <input list="cost_type" name="cost_type" placeholder="Cost Sector" class="filter_parameter_input">
+                              <datalist id="cost_type">
+                                {% for cost in all_cost_info %}
+                                <option value="{{ cost.cost_related_id.short_info }}">
+                                {% endfor %}
+                                
+                            </datalist>
+                            </div>
+                            <div class="col-lg-3 col-md-3 pr-lg-2 pl-lg-2 pr-md-2 pl-md-2 col-sm-12 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+                                <label class="filter_parameter_lable">Wallet </label>
+                                <select class="input--style-1 " type="text" placeholder="Wallet" name="wallet">
+                                  
+                                  <option class="input-option col-sm-12 col-12" value="">Select Wallet</option>
+                                  {% for wallet in all_my_wallet %}
+                                    <option class="input-option col-sm-12 col-12" value="{{ wallet.id }}">{{ wallet.wallet_name }}</option>
+                                  {% endfor %}
+                                </select>
+                            </div>
+
+
+                            <div class="col-lg-3 col-md-3 pr-lg-2 pl-lg-2 pr-md-2 pl-md-2 col-sm-12 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+                                <label class="filter_parameter_lable">From </label>
+                                <input type="date" class="filter_parameter_input" placeholder="From" name="date_from">
+                            </div>
+    
+                            <div class="col-lg-3 col-md-3 pr-lg-0 pl-lg-2 pr-md-0 pl-md-2 col-sm-12 col-12 m-0 p-0 pb-2" style="display: inline-block;">
+                                <label class="filter_parameter_lable">To </label>
+                                <input type="date" class="filter_parameter_input" name="date_to">
+                            </div>
+                          </div>
+                          
+                         
+                          <div class="form-row text-center" >
+                              <div class="col-12 mt-2">
+                                  <button class="btn btn-outline-dark text-dark col-md-4 col-lg-4 search_btn">Search Cost</button>
+                              </div>
+                              
+                          </div>
+                            
+                        </form>
+  
+                      </div>
+                      
+                  </div>
+  
+                    <div class="row-flex">
+  
+                          <div class="row col-md-12 p-0 m-0 d-flex flex-row justify-content-center">
+
+                            <h4 class="m-2 filter_block_heading">
+                                <span class="" style="color: #318045;">{{ current_month }}</span> Costings
+                            </h4>
+                            <div class="row col-lg-12 col-md-12 col-12">
+                              <a class="btn btn-standard text-dark py-1 px-5 float-right col-lg-4 col-md-4" onclick="show_cost_entry_form()">+add new cost</a>
+                            </div>
+                              <div class="row col-md-12 p-0 m-0 d-flex flex-row justify-content-center" >
+                                  
+                                  <!-- Search form -->
+                                  <!-- <div class="active-cyan-4 mb-4">
+                                  <input class="form-control" type="text" placeholder="Search" aria-label="Search">
+                                  </div> -->
+                                  <div class="col-lg-12 col-md-12 col-sm-12 col-12 justify-content-center" style="overflow-x:auto;">
+                                      <table id="client_list" class="table table-hover col-auto col-md-12 table-responsive mt-1 table-striped">
+                                          <thead>
+                                              <tr>
+                                                  <th>S.N.</th>
+                                                  <th>Amount (<img src="{% static 'images/sum.png' %}" style="height: 14px;"> {{ total_cost }})</th>
+                                                  <th>Sector</th>
+                                                  <th>Wallet</th>
+                                                  <th>Date</th>
+                                                  <th>Description</th>
+                                                  <th>Entry</th>
+                                                  <th>Actions</th>
+                                                  <!-- <th>Delete</th> -->
+                                              </tr>
+                                          </thead>
+          
+                                          <tbody>
+                                            {% for cost in pagination_data_list %}  
+                                              <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ cost.amount }}</td>
+                                                <td>{{ cost.cost_related_id.short_info }}</td>
+                                                <td>{{ cost.wallet.wallet_name }}</td>
+                                                <td>{{ cost.cost_date }}</td>
+                                                <td class="entry_description">{{ cost.description }}</td>
+                                                <td>{{ cost.created_at }}</td>
+                                                <td class="edit_dlt_icon_class">
+                                                  <a class="mr-2 py-0" type="button" href="{% url 'costs:edit_cost' id=cost.id %}"><img src="{% static 'images/edit-solid.svg' %}"></a>
+                                                
+                                                  <a id="del_options{{cost.id}}" class="py-0" type="button" onclick="showDelConfirmButtons('{{ cost.id }}')"><img src="{% static 'images/trash-solid.svg' %}"></a>
+                                                    <div id="del{{cost.id}}" style="display: none;">
+                                                        <a class="btn btn-primary py-0 px-2" href="{% url 'costs:delete_cost' id=cost.id %}">Yes</a>
+                                                        <button class="btn btn-danger py-0 px-2" onclick="cancelDelChange('{{ cost.id }}')">No</button>
+                                                    </div>
+                                                </td>
+                                              </tr>
+                                            {% endfor %}
+                                          </tbody>
+                                      </table>
+                                  </div>
+                                  <div class="col-lg-12 col-md-12 col-sm-12 col-12 prev_next_month_block">
+                                    <div class="btn btn-outline-light prev_month_block"><a href="{% url 'costs:search_costs' %}?date_from={{ prev_month_first_date }}&date_to={{ prev_month_last_date }}"><img src="{% static 'images/left.svg' %}"> Month</a></div>
+                                    <div class="btn btn-outline-light next_month_block"><a href="{% url 'costs:search_costs' %}?date_from={{ next_month_first_date }}&date_to={{ next_month_last_date }}">Month <img src="{% static 'images/right.svg' %}"></a></div>
+                                  </div>
+                            <!-- {% include 'pagination.html' %} -->
+                          
+                          </div>  
+                </div> 
+            </div>  <!-- /.col -->
+        </div>  <!-- /.row -->
+    </section>  <!-- /.content -->
+  </div>  <!-- /.content-wrapper -->
+
+  {% include 'costs/create_cost.html' %}
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+      const showDelConfirmButtons = (id) => {
+        console.log(id)
+        $('#del_options'+id).hide(); // hide the buttons
+        $("#del"+id).css("display", "block"); // view the buttons
+    
+      }
+
+      const cancelDelChange = (id) => {
+      console.log(id)
+      $('#del'+id).hide(); // hide the buttons
+      $("#del_options"+id).css("display", "block"); // view the checkbox
+    }
+
+    const show_new_details_entry = () =>{
+      $('#select-details-block').hide(); // hide the buttons
+      $('#new-entry-block').css("display", "block"); // hide the buttons
+    }
+
+    const show_cost_entry_form = () =>{
+      $('#cost-table-block').css("display", "none"); // hide the buttons
+      $('#cost-form-block').css("display", "block"); // hide the buttons
+    }
+
+    const show_cost_list = () =>{
+      $('#cost-form-block').css("display", "none"); // hide the buttons
+      $('#cost-table-block').css("display", "block");; // hide the buttons
+      
+    }
+
+  </script>
+
+{% endblock %}

@@ -1,0 +1,153 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="{% static 'images/logo.png' %}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+    href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!-- Font Awesome CSS-->
+    <link rel="stylesheet"
+        href="{% static 'vendor/font-awesome/css/font-awesome.min.css' %}">
+    <!-- Google fonts - Roboto for copy, Montserrat for headings-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,700">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700">
+    <!-- owl carousel-->
+    <link rel="stylesheet"
+        href="{% static 'vendor/owl.carousel/assets/owl.carousel.css' %}">
+    <link rel="stylesheet"
+        href="{% static 'vendor/owl.carousel/assets/owl.theme.default.css' %}">
+
+    <!-- Custom stylesheet - for your changes-->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+    <link href="{% static 'vendor/mdi-font/css/material-design-iconic-font.min.css' %}" rel="stylesheet" media="all">
+    <link href="{% static 'vendor/font-awesome-4.7/css/font-awesome.min.css' %}" rel="stylesheet" media="all">
+    <!-- Font special for pages-->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i" rel="stylesheet">
+
+    <!-- Vendor CSS-->
+    <link href="{% static 'vendor/select2/select2.min.css' %}" rel="stylesheet" media="all">
+    <link href="{% static 'vendor/datepicker/daterangepicker.css' %}" rel="stylesheet" media="all">
+    <!-- cart js cdn -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>{% block title %}Title here {% endblock %}</title>
+  </head>
+  <body class="font-family-sans-serif">
+    
+    <div class="body_content">
+
+      <div class="mobile-body-main-content">
+        {% block content %}
+    
+        replace me
+    
+        {% endblock %}
+        </div>
+
+
+    </div>
+    
+    
+    <div class="mb-footer-block">
+
+
+      <!-- Footer -->
+      <div class="mb_menu-option-icons">
+        <a class="nav-link" href="{% url 'costs:my_costs' %}"><img  class="cost-icon" src="{% static 'images/icon-price-lower.svg' %}"></a>
+        
+  
+        <a class="nav-link" href="{% url 'income:my_income' %}"><img  class="income-icon" src="{% static 'images/icon-price-higher.svg' %}"></a>
+        
+        <a class="" href="{% url 'home' %}" style="font-family:Arial, Helvetica, sans-serif; font-weight:bolder"><img class="home-icon" src="{% static 'images/home.svg' %}" style="height: 30px;"></a>
+          
+        <a class="nav-link" href="{% url 'savings:my_savings' %}"><img  class="wallet-icon" src="{% static 'images/wallet.svg' %}"></span></a>
+
+        
+          <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
+            <img class="profile-icon" src="{% static 'images/profile.svg' %}">
+            <!-- {{ request.user.first_name }}        -->
+           
+          
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="{% url 'account:logout' %}" class="">
+               Log out
+            </a>
+        
+        
+      </div>
+      <!-- Footer -->
+    
+      
+    </div>
+
+    <script>
+      const get_amount = () => {
+        wallet = document.getElementById('top-sec-wallet').value
+        month = document.getElementById('top-sec-month').value
+        url = '{% url "account:get_wallet_amounts_dahs" %}' 
+        var data_dict = {
+          'wallet': wallet,
+          'month': month,
+        }
+        console.log(data_dict);
+        $.ajax({
+          type: "GET",
+          dataType: 'json',
+          url: url,
+          data: data_dict,
+          success: function(data) {
+          console.log(data);
+          try{
+          document.getElementById('wallet_balance_top_sec').innerHTML = 'Tk. ' + data.wallet_balance;
+          }
+          catch{
+            //pass
+          }
+          try{
+          document.getElementById('total_cost_top_sec').innerHTML = 'Tk. ' + data.total_cost;
+          }
+          catch{
+            //pass
+          }
+          try{
+          document.getElementById('total_income_top_sec').innerHTML = 'Tk. ' + data.total_income;
+          }
+          catch{
+            //pass
+          }
+  
+      }
+          
+          });
+      }
+  </script>
+
+    <script>
+    try{
+      document.getElementById('datePicker').valueAsDate = new Date();}
+    catch{
+        
+    }
+    </script>
+    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <!-- Vendor JS-->
+    <script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+    <script src="{% static 'vendor/datepicker/moment.min.js' %}"></script>
+    <script src="{% static 'vendor/datepicker/daterangepicker.js' %}"></script>
+
+    <!-- Main JS-->
+    <script src="{% static 'js/custom.js' %}"></script>
+  </body>
+</html>
