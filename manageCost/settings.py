@@ -40,6 +40,8 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://amarhishab.com',
+    'https://www.amarhishab.com',
     'https://*.onrender.com',
     'https://*.localhost',
     'http://localhost',
@@ -171,71 +173,35 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGGING = {
     'version': 1,
-    # 'loggers':{
-    #     'django':{
-    #         'handlers':['file'],
-    #         'level': 'DEBUG'
-    #     }
-    # },
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
     'loggers': {
         'django': {
-            'handlers': ['file'],
-            'level': 'WARNING',
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
         },
         'django.request': {
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': True,
         },
-        'shop_management.urls': {
-            'handlers': ['file'],
-            'level': 'WARNING',
-            # 'filters': ['special']
-            'propagate': True,
-        },
-        'shop_management.settings': {
-            'handlers': ['file'],
-            'level': 'WARNING',
-            # 'filters': ['special']
-            'propagate': True,
-        },
-        'products.urls': {
-            'handlers': ['file'],
-            'level': 'WARNING',
-            # 'filters': ['special']
-            'propagate': True,
-        },
-        'products.views': {
-            'handlers': ['file'],
-            'level': 'WARNING',
-            # 'filters': ['special']
-            'propagate': True,
-        },
-        'products.models': {
-            'handlers': ['file'],
-            'level': 'WARNING',
-            # 'filters': ['special']
-            'propagate': True,
-        },
     },
-    'handlers':{
-        'file':{
-            'level':'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': 'errorLogging.log',
-            'formatter': 'simple',
-        }
-    },
-    'formatters':{
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message} [%(filename)s %(funcName)s %(lineno)s]',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}  [%(filename)s %(funcName)s %(lineno)s]',
-            'style': '{',
-        },
-    }
 }
 
 # Default primary key field type
@@ -244,6 +210,13 @@ LOGGING = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'https://amarhishab.com',
+    'https://www.amarhishab.com',
+    'http://localhost:5173',
+    'http://localhost:3000',
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -252,6 +225,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'EXCEPTION_HANDLER': 'manageCost.exception_handler.custom_exception_handler',
 }
 
 from datetime import timedelta

@@ -41,7 +41,7 @@ class IncomesViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Filtering by date range or wallet is supported via query parameters
-        queryset = Incomes.objects.filter(income_related_id__create_by=self.request.user).order_by('-income_date', '-id')
+        queryset = Incomes.objects.filter(income_related_id__create_by_id=self.request.user.id).order_by('-income_date', '-id')
         wallet_id = self.request.query_params.get('wallet')
         if wallet_id:
             queryset = queryset.filter(wallet_id=wallet_id)
