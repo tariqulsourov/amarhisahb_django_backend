@@ -40,11 +40,24 @@ class CostsViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filtering by date range or wallet is supported via query parameters
-        queryset = Costs.objects.filter(cost_related_id__create_by_id=self.request.user.id).order_by('-cost_date', '-id')
+        user_id = self.request.user.id
+        queryset = Costs.objects.filter(
+            cost_related_id__create_by_id=user_id
+        ).select_related('cost_related_id', 'wallet', 'wallet__wallet_info').order_by('-cost_date', '-id')
+
         wallet_id = self.request.query_params.get('wallet')
         if wallet_id:
             queryset = queryset.filter(wallet_id=wallet_id)
+
+        month = self.request.query_params.get('month')
+        if month:
+            parts = month.split('-')
+            if len(parts) == 2:
+                try:
+                    queryset = queryset.filter(cost_date__year=int(parts[0]), cost_date__month=int(parts[1]))
+                except (ValueError, TypeError):
+                    pass
+
         return queryset
 
     @transaction.atomic

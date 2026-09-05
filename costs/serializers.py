@@ -21,17 +21,35 @@ class CostsSerializer(serializers.ModelSerializer):
 
     def get_cost_related_detail(self, obj):
         try:
-            if obj.cost_related_id_id:
-                return CostRelatedSerializer(obj.cost_related_id).data
+            rel = getattr(obj, 'cost_related_id', None)
+            if rel:
+                return {
+                    'id': rel.id,
+                    'short_info': rel.short_info,
+                    'short_description': rel.short_description or '',
+                    'cost_field': rel.cost_field or '',
+                }
         except Exception:
-            return None
+            pass
         return None
 
     def get_wallet_detail(self, obj):
         try:
-            if obj.wallet_id:
-                return WalletSerializer(obj.wallet).data
+            w = getattr(obj, 'wallet', None)
+            if w:
+                w_info = getattr(w, 'wallet_info', None)
+                return {
+                    'id': w.id,
+                    'wallet_name': w.wallet_name,
+                    'wallet_number': w.wallet_number or '',
+                    'wallet_status': w.wallet_status if w.wallet_status is not None else 0,
+                    'wallet_info_detail': {
+                        'id': w_info.id,
+                        'name': w_info.name,
+                        'image': w_info.image,
+                    } if w_info else None
+                }
         except Exception:
-            return None
+            pass
         return None
 

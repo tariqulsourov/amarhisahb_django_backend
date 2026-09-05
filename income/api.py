@@ -40,11 +40,24 @@ class IncomesViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filtering by date range or wallet is supported via query parameters
-        queryset = Incomes.objects.filter(income_related_id__create_by_id=self.request.user.id).order_by('-income_date', '-id')
+        user_id = self.request.user.id
+        queryset = Incomes.objects.filter(
+            income_related_id__create_by_id=user_id
+        ).select_related('income_related_id', 'wallet', 'wallet__wallet_info').order_by('-income_date', '-id')
+
         wallet_id = self.request.query_params.get('wallet')
         if wallet_id:
             queryset = queryset.filter(wallet_id=wallet_id)
+
+        month = self.request.query_params.get('month')
+        if month:
+            parts = month.split('-')
+            if len(parts) == 2:
+                try:
+                    queryset = queryset.filter(income_date__year=int(parts[0]), income_date__month=int(parts[1]))
+                except (ValueError, TypeError):
+                    pass
+
         return queryset
 
     @transaction.atomic
