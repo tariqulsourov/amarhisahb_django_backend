@@ -1,6 +1,13 @@
 # ACTIVE API SERIALIZERS: Required for the new React frontend and Mobile application.
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from account.models import User, UserType, UsersSettings
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user'] = UserSerializer(self.user).data
+        return data
 
 class UserTypeSerializer(serializers.ModelSerializer):
     class Meta:

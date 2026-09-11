@@ -1,8 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 
-from account.api import UserRegistrationView, UserProfileView, DashboardSummaryView, GoogleLoginView, VapidPublicKeyView, PushSubscriptionView
+from account.api import (
+    UserRegistrationView, UserProfileView, DashboardSummaryView, 
+    GoogleLoginView, VapidPublicKeyView, PushSubscriptionView,
+    CustomTokenObtainPairView, HealthCheckView
+)
 from savings.api import PredefinedWalletListViewSet, WalletViewSet, SavingsViewSet, BalanceTransferView, LoanEntryViewSet, ScheduledTransactionViewSet
 from income.api import IncomeRelatedViewSet, IncomesViewSet
 from costs.api import CostRelatedViewSet, CostsViewSet
@@ -20,8 +24,11 @@ router.register(r'costs/categories', CostRelatedViewSet, basename='cost-category
 router.register(r'costs', CostsViewSet, basename='cost')
 
 urlpatterns = [
+    # Health Check Endpoint (Keep Render awake / uptime monitor)
+    path('health/', HealthCheckView.as_view(), name='api_health_check'),
+
     # JWT Authentication Endpoints
-    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/register/', UserRegistrationView.as_view(), name='api_register'),
     path('auth/profile/', UserProfileView.as_view(), name='api_profile'),

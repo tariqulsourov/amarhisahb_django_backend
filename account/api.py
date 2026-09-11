@@ -233,3 +233,18 @@ class GoogleLoginView(APIView):
             'user': UserSerializer(user).data
         }, status=status.HTTP_200_OK)
 
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from account.serializers import CustomTokenObtainPairSerializer
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+class HealthCheckView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
