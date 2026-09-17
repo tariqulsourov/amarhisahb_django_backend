@@ -239,3 +239,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
 }
 
+# Internal Cron Dispatch Secret for Keep-alive & Reminder Execution
+INTERNAL_CRON_SECRET = os.environ.get('INTERNAL_CRON_SECRET', 'amarhishab_cron_secret_2026')
+
+

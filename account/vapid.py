@@ -8,6 +8,24 @@ VAPID_PRIVATE_KEY_PATH = os.path.join(BASE_DIR, 'private_key.pem')
 VAPID_PUBLIC_KEY_PATH = os.path.join(BASE_DIR, 'public_key.pem')
 
 def ensure_vapid_keys():
+    # 1. Check if VAPID keys are provided via environment variables (persistent across Render restarts)
+    env_priv = os.environ.get('VAPID_PRIVATE_KEY')
+    env_pub = os.environ.get('VAPID_PUBLIC_KEY')
+    if env_priv:
+        try:
+            with open(VAPID_PRIVATE_KEY_PATH, 'w') as f:
+                f.write(env_priv.replace('\\n', '\n').strip() + '\n')
+        except Exception as e:
+            print(f"Warning: could not write VAPID_PRIVATE_KEY_PATH: {e}")
+
+    if env_pub:
+        try:
+            with open(VAPID_PUBLIC_KEY_PATH, 'w') as f:
+                f.write(env_pub.replace('\\n', '\n').strip() + '\n')
+        except Exception as e:
+            print(f"Warning: could not write VAPID_PUBLIC_KEY_PATH: {e}")
+
+    # 2. If files still do not exist, generate and persist
     if not os.path.exists(VAPID_PRIVATE_KEY_PATH):
         v = Vapid()
         v.generate_keys()

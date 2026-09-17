@@ -1,11 +1,12 @@
 import json
+import pytz
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.core.signing import Signer
 from pywebpush import webpush, WebPushException
 
 from account.models import PushSubscription
-from account.vapid import VAPID_PRIVATE_KEY_PATH
+from account.vapid import VAPID_PRIVATE_KEY_PATH, ensure_vapid_keys
 from savings.models import ScheduledTransaction
 
 class Command(BaseCommand):
@@ -20,7 +21,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         force = options['force']
-        today_date = timezone.localtime(timezone.now()).date()
+        dhaka_tz = pytz.timezone('Asia/Dhaka')
+        today_date = timezone.now().astimezone(dhaka_tz).date()
 
         # Find pending transactions scheduled for today or earlier
         if force:
@@ -28,10 +30,11 @@ class Command(BaseCommand):
         else:
             scheduled_items = ScheduledTransaction.objects.filter(status='pending', scheduled_date=today_date)
 
-        self.stdout.write(f"Processing scheduled transactions for date: {today_date} (Count: {scheduled_items.count()})")
+        self.stdout.write(f"Processing scheduled transactions for Dhaka date: {today_date} (Count: {scheduled_items.count()})")
 
         sent_count = 0
         signer = Signer()
+        ensure_vapid_keys()
 
         for item in scheduled_items:
             user = item.user

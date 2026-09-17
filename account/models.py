@@ -49,6 +49,7 @@ class UsersSettings(models.Model):
     using_hand = models.CharField(max_length=10, blank=False, null=False, default='right')
     reminder_time = models.CharField(max_length=5, blank=True, null=True, default='21:00')
     reminder_enabled = models.BooleanField(default=False)
+    last_reminder_sent_date = models.DateField(blank=True, null=True)
 
     def __int__(self):
         return self.id

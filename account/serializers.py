@@ -17,7 +17,7 @@ class UserTypeSerializer(serializers.ModelSerializer):
 class UsersSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsersSettings
-        fields = ['id', 'prefered_view', 'using_hand', 'reminder_time', 'reminder_enabled']
+        fields = ['id', 'prefered_view', 'using_hand', 'reminder_time', 'reminder_enabled', 'last_reminder_sent_date']
 
 class UserSerializer(serializers.ModelSerializer):
     user_type = UserTypeSerializer(read_only=True)

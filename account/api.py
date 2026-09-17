@@ -248,3 +248,43 @@ class HealthCheckView(APIView):
         return Response({"status": "ok"}, status=status.HTTP_200_OK)
 
 
+from io import StringIO
+from django.core.management import call_command
+from django.conf import settings
+
+class InternalDispatchRemindersView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return self._dispatch(request)
+
+    def post(self, request):
+        return self._dispatch(request)
+
+    def _dispatch(self, request):
+        secret_token = request.query_params.get('secret') or request.headers.get('X-Internal-Secret')
+        configured_secret = getattr(settings, 'INTERNAL_CRON_SECRET', 'amarhishab_cron_secret_2026')
+
+        if not secret_token or secret_token != configured_secret:
+            return Response({"error": "Unauthorized. Invalid secret token."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        out_reminders = StringIO()
+        try:
+            call_command('check_reminders', stdout=out_reminders)
+        except Exception as e:
+            out_reminders.write(f"Error: {e}\n")
+
+        out_scheduled = StringIO()
+        try:
+            call_command('process_scheduled_transactions', stdout=out_scheduled)
+        except Exception as e:
+            out_scheduled.write(f"Error: {e}\n")
+
+        return Response({
+            "status": "success",
+            "message": "Cron checks executed successfully.",
+            "reminders_log": out_reminders.getvalue(),
+            "scheduled_log": out_scheduled.getvalue()
+        }, status=status.HTTP_200_OK)
+
+

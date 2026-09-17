@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from account.api import (
     UserRegistrationView, UserProfileView, DashboardSummaryView, 
     GoogleLoginView, VapidPublicKeyView, PushSubscriptionView,
-    CustomTokenObtainPairView, HealthCheckView
+    CustomTokenObtainPairView, HealthCheckView, InternalDispatchRemindersView
 )
 from savings.api import PredefinedWalletListViewSet, WalletViewSet, SavingsViewSet, BalanceTransferView, LoanEntryViewSet, ScheduledTransactionViewSet
 from income.api import IncomeRelatedViewSet, IncomesViewSet
@@ -26,6 +26,9 @@ router.register(r'costs', CostsViewSet, basename='cost')
 urlpatterns = [
     # Health Check Endpoint (Keep Render awake / uptime monitor)
     path('health/', HealthCheckView.as_view(), name='api_health_check'),
+
+    # Internal Cron Dispatch Endpoint (Execute reminders & scheduled transactions)
+    path('internal/dispatch-reminders/', InternalDispatchRemindersView.as_view(), name='internal_dispatch_reminders'),
 
     # JWT Authentication Endpoints
     path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
