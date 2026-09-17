@@ -49,8 +49,16 @@ class CostsViewSet(viewsets.ModelViewSet):
         if wallet_id:
             queryset = queryset.filter(wallet_id=wallet_id)
 
+        from_date = self.request.query_params.get('from_date')
+        if from_date:
+            queryset = queryset.filter(cost_date__gte=from_date)
+
+        to_date = self.request.query_params.get('to_date')
+        if to_date:
+            queryset = queryset.filter(cost_date__lte=to_date)
+
         month = self.request.query_params.get('month')
-        if month:
+        if month and not from_date and not to_date:
             parts = month.split('-')
             if len(parts) == 2:
                 try:
