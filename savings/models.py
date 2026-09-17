@@ -114,6 +114,7 @@ class ScheduledTransaction(models.Model):
     scheduled_date = models.DateField(null=False, blank=False)
     description = models.CharField(max_length=255, null=True, blank=True, default='')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    last_notified_date = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
