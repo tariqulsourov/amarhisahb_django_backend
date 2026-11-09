@@ -10,6 +10,7 @@ from account.api import (
 from savings.api import PredefinedWalletListViewSet, WalletViewSet, SavingsViewSet, BalanceTransferView, LoanEntryViewSet, ScheduledTransactionViewSet
 from income.api import IncomeRelatedViewSet, IncomesViewSet
 from costs.api import CostRelatedViewSet, CostsViewSet
+from investments.api import InvestmentEntityViewSet, InvestmentTransactionViewSet
 
 # Initialize the router for ViewSets
 router = DefaultRouter()
@@ -22,6 +23,8 @@ router.register(r'income/categories', IncomeRelatedViewSet, basename='income-cat
 router.register(r'income', IncomesViewSet, basename='income')
 router.register(r'costs/categories', CostRelatedViewSet, basename='cost-category')
 router.register(r'costs', CostsViewSet, basename='cost')
+router.register(r'investments', InvestmentEntityViewSet, basename='investment')
+router.register(r'investment-transactions', InvestmentTransactionViewSet, basename='investment-transaction')
 
 urlpatterns = [
     # Health Check Endpoint (Keep Render awake / uptime monitor)

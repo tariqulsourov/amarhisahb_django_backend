@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'costs',
     'income',
     'savings',
+    'investments',
 ]
 
 MIDDLEWARE = [

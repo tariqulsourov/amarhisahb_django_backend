@@ -8,9 +8,10 @@ from datetime import date, datetime, timedelta
 from account.models import User, UsersSettings, PushSubscription
 from account.serializers import UserSerializer, UserRegistrationSerializer, UsersSettingsSerializer
 from account.vapid import get_vapid_public_key_b64
-from savings.models import Wallet, MonthlyBalanceSummary
+from savings.models import Wallet, MonthlyBalanceSummary, LoanEntry
 from costs.models import Costs
 from income.models import Incomes
+from investments.models import InvestmentEntity
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
@@ -37,25 +38,27 @@ class UserProfileView(APIView):
             settings_obj = UsersSettings.objects.get(user=user)
         except UsersSettings.DoesNotExist:
             settings_obj = UsersSettings(user=user)
-        
-        settings_data = data.get('settings', {})
-        settings_obj.prefered_view = settings_data.get('prefered_view', settings_obj.prefered_view)
-        settings_obj.using_hand = settings_data.get('using_hand', settings_obj.using_hand)
-        settings_obj.reminder_time = settings_data.get('reminder_time', settings_obj.reminder_time)
-        settings_obj.reminder_enabled = settings_data.get('reminder_enabled', settings_obj.reminder_enabled)
+
+        if 'prefered_view' in data:
+            settings_obj.prefered_view = data.get('prefered_view')
+        if 'using_hand' in data:
+            settings_obj.using_hand = data.get('using_hand')
+        if 'reminder_time' in data:
+            settings_obj.reminder_time = data.get('reminder_time')
+        if 'reminder_enabled' in data:
+            settings_obj.reminder_enabled = data.get('reminder_enabled')
+
         settings_obj.save()
 
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-
 class VapidPublicKeyView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         public_key = get_vapid_public_key_b64()
-        return Response({"public_key": public_key})
-
+        return Response({"public_key": public_key}, status=status.HTTP_200_OK)
 
 class PushSubscriptionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -67,14 +70,14 @@ class PushSubscriptionView(APIView):
         p256dh = keys.get('p256dh')
         auth = keys.get('auth')
 
-        if not all([endpoint, p256dh, auth]):
+        if not endpoint or not p256dh or not auth:
             return Response(
-                {"error": "endpoint, keys.p256dh, and keys.auth are required."},
+                {"error": "Missing subscription parameters (endpoint, keys.p256dh, keys.auth)."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Update or create the subscription for the user
-        PushSubscription.objects.update_or_create(
+        # Update or create subscription for this specific endpoint
+        subscription, created = PushSubscription.objects.update_or_create(
             endpoint=endpoint,
             defaults={
                 'user': user,
@@ -164,7 +167,39 @@ class DashboardSummaryView(APIView):
                 "balance": m_balance
             })
 
-        # Return combined payload
+        # 5. Calculate Investment Metrics
+        entities = InvestmentEntity.objects.filter(user=user)
+        outgoing_entities = entities.filter(direction='outgoing')
+        incoming_entities = entities.filter(direction='incoming')
+
+        total_invested_capital = outgoing_entities.aggregate(total=Sum('total_capital_invested'))['total'] or 0
+        current_portfolio_value = outgoing_entities.aggregate(total=Sum('current_valuation'))['total'] or 0
+        total_realized_profit = outgoing_entities.aggregate(total=Sum('total_profit_realized'))['total'] or 0
+        unrealized_gain = current_portfolio_value - total_invested_capital
+
+        roi_percentage = 0.0
+        if total_invested_capital > 0:
+            roi_percentage = round(((total_realized_profit + unrealized_gain) / total_invested_capital) * 100, 2)
+
+        total_investors_capital_held = incoming_entities.aggregate(total=Sum('total_capital_invested'))['total'] or 0
+        total_profit_paid_out = incoming_entities.aggregate(total=Sum('total_profit_realized'))['total'] or 0
+        net_investment_equity = current_portfolio_value - total_investors_capital_held
+
+        # 6. Calculate Loan Metrics
+        loans = LoanEntry.objects.filter(create_by=user)
+        total_take = sum(l.amount for l in loans if l.entry_type == 'take')
+        total_repay = sum(l.amount for l in loans if l.entry_type == 'repay')
+        total_give = sum(l.amount for l in loans if l.entry_type == 'give')
+        total_collect = sum(l.amount for l in loans if l.entry_type == 'collect')
+
+        payables = total_take - total_repay
+        receivables = total_give - total_collect
+
+        # 7. Formulate Total Net Worth
+        # Net Worth = Liquid Cash + Investment Portfolio Value + Receivables - Payables - Investor Liabilities
+        net_worth = total_balance + current_portfolio_value + receivables - payables - total_investors_capital_held
+
+        # Return combined payload (fully backward-compatible + enriched with Net Worth)
         return Response({
             "total_balance": total_balance,
             "current_month_cost": total_cost,
@@ -176,7 +211,28 @@ class DashboardSummaryView(APIView):
                 "wallet_number": w.wallet_number,
                 "image": w.wallet_info.image if w.wallet_info else None
             } for w in wallets],
-            "graph_data": graph_data
+            "graph_data": graph_data,
+            "investments_summary": {
+                "outgoing": {
+                    "total_invested_capital": total_invested_capital,
+                    "current_portfolio_value": current_portfolio_value,
+                    "unrealized_gain": unrealized_gain,
+                    "total_realized_profit": total_realized_profit,
+                    "roi_percentage": roi_percentage,
+                    "active_count": outgoing_entities.filter(status='active').count()
+                },
+                "incoming": {
+                    "total_investors_capital_held": total_investors_capital_held,
+                    "total_profit_paid_out": total_profit_paid_out,
+                    "active_count": incoming_entities.filter(status='active').count()
+                },
+                "net_investment_equity": net_investment_equity
+            },
+            "loans_summary": {
+                "receivables": receivables,
+                "payables": payables
+            },
+            "net_worth": net_worth
         })
 
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -286,5 +342,3 @@ class InternalDispatchRemindersView(APIView):
             "reminders_log": out_reminders.getvalue(),
             "scheduled_log": out_scheduled.getvalue()
         }, status=status.HTTP_200_OK)
-
-
