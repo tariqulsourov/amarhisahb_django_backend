@@ -1,3 +1,4 @@
+import calendar
 from datetime import date, datetime
 from django.db import transaction
 from django.db.models import Sum
@@ -6,22 +7,44 @@ from rest_framework.exceptions import ValidationError
 from investments.models import InvestmentEntity, InvestmentTransaction, ValuationLog
 from savings.models import Wallet, MonthlyBalanceSummary
 
+
+def parse_date_safely(val):
+    """
+    Safely normalizes various date representations (str, datetime, date, None) into a date object.
+    """
+    if not val:
+        return date.today()
+    if isinstance(val, datetime):
+        return val.date()
+    if isinstance(val, date):
+        return val
+    if isinstance(val, str):
+        val = val.strip()
+        if len(val) >= 10:
+            val = val[:10]
+        for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y'):
+            try:
+                return datetime.strptime(val, fmt).date()
+            except ValueError:
+                pass
+    return date.today()
+
+
 def get_last_date_of_month(target_date):
+    """
+    Returns a date object representing the last calendar date of the month for target_date.
+    Accepts str, date, or datetime.
+    """
+    target_date = parse_date_safely(target_date)
     year, month = target_date.year, target_date.month
-    if month == 2:
-        try:
-            return datetime(year, month, 28).date()
-        except ValueError:
-            return datetime(year, month, 29).date()
-    else:
-        try:
-            return datetime(year, month, 31).date()
-        except ValueError:
-            return datetime(year, month, 30).date()
+    _, last_day = calendar.monthrange(year, month)
+    return date(year, month, last_day)
 
 
 def sync_monthly_summary(user, transaction_date):
-    """Keeps the historical MonthlyBalanceSummary aligned with total liquid wallet cash."""
+    """
+    Keeps the historical MonthlyBalanceSummary aligned with total liquid wallet cash.
+    """
     last_date = get_last_date_of_month(transaction_date)
     total_liquid = Wallet.objects.filter(wallet_of=user).aggregate(total=Sum('wallet_status'))['total'] or 0
     try:
@@ -48,6 +71,9 @@ def process_investment_transaction(user, entity, wallet, transaction_type, amoun
         raise ValidationError({"error": "The selected investment does not belong to your account."})
     if amount <= 0:
         raise ValidationError({"error": "Amount must be greater than zero."})
+
+    # Ensure transaction_date is always a valid date object
+    safe_date = parse_date_safely(transaction_date)
 
     direction = entity.direction
 
@@ -123,18 +149,18 @@ def process_investment_transaction(user, entity, wallet, transaction_type, amoun
     wallet.save(update_fields=['wallet_status'])
     entity.save(update_fields=['total_capital_invested', 'current_valuation', 'total_profit_realized', 'status', 'updated_at'])
 
-    # Create transaction record
+    # Create transaction record with validated date object
     tx = InvestmentTransaction.objects.create(
         entity=entity,
         wallet=wallet,
         transaction_type=transaction_type,
         amount=amount,
-        transaction_date=transaction_date,
+        transaction_date=safe_date,
         notes=notes
     )
 
     # Sync monthly liquid summary
-    sync_monthly_summary(user, transaction_date)
+    sync_monthly_summary(user, safe_date)
 
     return tx
 
